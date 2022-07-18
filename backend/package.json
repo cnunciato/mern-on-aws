@@ -3,6 +3,8 @@
     "version": "0.0.1",
     "private": true,
     "dependencies": {
+        "@types/cors": "^2.8.12",
+        "cors": "^2.8.5",
         "dotenv": "^14.3.2",
         "express": "^4.17.2",
         "mongodb": "^4.3.1"

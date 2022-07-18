@@ -8,14 +8,9 @@ if (!conn) {
     process.exit(1);
 }
 
-let caCertificatePath: string | undefined;
-if (process.env.CA_CERT) {
-    caCertificatePath = path.resolve("./ca-certificate.crt")
-    fs.writeFileSync(caCertificatePath, process.env.CA_CERT);
-}
-
+// https://docs.aws.amazon.com/documentdb/latest/developerguide/ca_cert_rotation.html
 export const client = new mongodb.MongoClient(conn, {
-    sslCA: caCertificatePath,
+    sslCA: path.resolve("./rds-combined-ca-bundle.pem"),
 });
 
 export const findByID = (id: string) => ({ _id: new bson.ObjectID(id) });
