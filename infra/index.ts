@@ -16,7 +16,6 @@ const dbCluster = new aws.docdb.Cluster("docdb", {
     masterUsername: "doc",
     masterPassword: "database8chars",
 });
-
 const db = new aws.docdb.ClusterInstance(`clusterInstance`, {
     identifier: `docdb-cluster-inst`,
     clusterIdentifier: dbCluster.id,
@@ -32,7 +31,6 @@ const vpcConnector = new aws.apprunner.VpcConnector("vpc-connector", {
     securityGroups: [ defaultVpc.vpc.defaultSecurityGroupId ],
     subnets: defaultVpc.publicSubnetIds,
 });
-
 let backendApp = new aws.apprunner.Service("backend-app", {
     serviceName: "backend-app",
     networkConfiguration: {
@@ -70,64 +68,38 @@ let backendApp = new aws.apprunner.Service("backend-app", {
 
 export const backendUrl = pulumi.interpolate `https://${backendApp.serviceUrl}`;
 
-// --- Create Frontend via S3 ---
-const frontendBuild = new local.Command("frontend-build", {
-    dir: "../frontend",
-    // --- Windows ---
-    // create: pulumi.interpolate `SET VITE_API_URL=${backendUrl} && npm install && npm run build`,
-    // --- Linux/OSX ---
-    create: pulumi.interpolate `export VITE_API_URL=https://${backendUrl} && npm install && npm run build`,
-});
-
-export const buildOutput = frontendBuild.stdout;
-
-const bucketName = "frontend-bucket";
-const bucket = new aws.s3.Bucket(bucketName, {
-    website: {
-        indexDocument: "index.html",
+// --- App Runner for Frontend ---
+const frontendApp = new aws.apprunner.Service("frontend-app", {
+    serviceName: "frontend-app",
+    networkConfiguration: {
+        egressConfiguration: {
+            egressType: "VPC",
+            vpcConnectorArn: vpcConnector.arn,
+        }
     },
-    acl: "public-read",
-});
-
-const bucketPolicy = new aws.s3.BucketPolicy("bucketPolicy", {
-    bucket: bucket.bucket,
-    policy: {
-        Version: "2012-10-17",
-        Statement: [{
-          Effect: "Allow",
-          Principal: "*",
-          Action: [
-            "s3:GetObject"
-          ],
-          Resource: [
-            pulumi.interpolate `arn:aws:s3:::${bucket.bucket}/*` // policy refers to bucket name explicitly
-          ]
-        }]
+    sourceConfiguration: {
+        authenticationConfiguration: {
+            connectionArn: config.require( "gh_connection" ),
+        },
+        codeRepository: {
+            codeConfiguration: {
+                codeConfigurationValues: {
+                    buildCommand: pulumi.interpolate `export VITE_API_URL=${backendUrl} && cd frontend && npm install && npm run build`,
+                    port: "5000",
+                    runtime: "NODEJS_14",
+                    startCommand: "npm run --prefix frontend preview -- --host --port 5000",
+                    runtimeEnvironmentVariables: {
+                    }
+                },
+                configurationSource: "API",
+            },
+            repositoryUrl: config.require( "repo" ),
+            sourceCodeVersion: {
+                type: "BRANCH",
+                value: "main",
+            },
+        },
     },
 });
 
-const siteDir = "../frontend/dist";
-
-
-// frontendBuild.stdout.apply(out => {
-//     new aws.s3.BucketObject("index.html", {
-//         bucket: bucket,
-//         source: new pulumi.asset.FileAsset(path.join(siteDir, "index.html")),
-//         contentType: mime.getType("index.html") || undefined,
-//     });
-
-//     // Upload assets
-//     for (let item of fs.readdirSync(siteDir + "/assets")) {
-//         let filePath = path.join(siteDir, "assets", item);
-//         let object = new aws.s3.BucketObject("assets/" + item, {
-//             bucket: bucket,
-//             source: new pulumi.asset.FileAsset(filePath),
-//             contentType: mime.getType(filePath) || undefined,
-//         });
-//     }
-// });
-
-// Upload index.html
-
-
-export const website = bucket.websiteEndpoint;
+export const website = pulumi.interpolate `https://${frontendApp.serviceUrl}`;
