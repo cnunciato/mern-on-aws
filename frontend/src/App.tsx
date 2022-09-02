@@ -90,7 +90,7 @@ class App extends Component {
         return <div className="App">
             <header>
                 <img src={pulumipus} className="App-logo" alt="logo" />
-                <h1>Pulumipus's Grocery List</h1>
+                <h1>Pulumipus's To-do List</h1>
             </header>
             { this.items.length > 0 && <p>{this.items.length} item{this.items.length !== 1 && "s"}:</p> }
             <ul>

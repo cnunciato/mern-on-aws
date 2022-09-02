@@ -10,7 +10,7 @@ app.use(cors());
 app.use(express.json());
 app.use(`${prefix}/items`, itemsRouter);
 app.get('/', (req, res) => {
-    res.send('ok')
+    res.send('status: ok')
 });
 
 const server = app.listen(port, () => {
