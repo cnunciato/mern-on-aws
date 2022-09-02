@@ -1,5 +1,5 @@
 config:
   aws:region: us-west-2
   mern-on-aws-infra-2:gh_connection:
-    secure: AAABAHtLCT563wimqa0NG28XZv3aZaCiuERHbXsCiIQTt6Em6bDp22DAIiaZUzydAkb/vK7LNUEAZuqBZ8W79rId1p/pCmU52ZCV4Mb7mqxhZk8QZEvmhfioayMwBWQGx9DJgy51qfa1SJwNNUCvgtPbddhKy0niphTEALR8ewjgizo=
+    secure: AAABAAC72xVZ8bl2YjHzrtRz+fAfoaKuV5Q7aTpehnmuCHny7TPvdFAlfQxQvqzw3BBGAaNxaMFNVmsfjmQ8hiAmd//A5/s1BhDTbaw5/XEY1XLS4QS3NArcsW+ORKVNp1VO0BsNdopDl1NjiLy0dbJDJpEZ71X37LCDa9oyTYjUbqk=
   mern-on-aws-infra-2:repo: https://github.com/cnunciato/mern-on-aws
